@@ -1,0 +1,10 @@
+{
+    "name": "express-with-ease"
+  , "version": "0.0.1"
+  , "private": false
+  , "dependencies": {
+      "express": "2.4.6"
+    , "jade": ">= 0.0.1"
+	, "file": ">= 0.0.1"
+  }
+}
