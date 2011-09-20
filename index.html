@@ -1,77 +1,143 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset='utf-8'>
+<!DOCTYPE html>  <html> <head>   <title>index.coffee</title>   <meta http-equiv="content-type" content="text/html; charset=UTF-8">   <link rel="stylesheet" media="all" href="docco.css" /> </head> <body>   <div id="container">     <div id="background"></div>          <table cellpadding="0" cellspacing="0">       <thead>         <tr>           <th class="docs">             <h1>               index.coffee             </h1>           </th>           <th class="code">           </th>         </tr>       </thead>       <tbody>                               <tr id="section-1">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-1">&#182;</a>               </div>               <p>Copyright (c) 2011 Brainsware</p>
 
-  <title>JimPanic/express-with-ease @ GitHub</title>
+<p>Permission is hereby granted, free of charge, to any person obtaining a
+copy of this software and associated documentation files (the "Software"),
+to deal in the Software without restriction, including without limitation the
+rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
+sell copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:</p>
 
-  <style type="text/css">
-    body {
-      margin-top: 1.0em;
-      background-color: #a0108c;
-      font-family: Helvetica, Arial, FreeSans, san-serif;
-      color: #ffffff;
-    }
-    #container {
-      margin: 0 auto;
-      width: 700px;
-    }
-    h1 { font-size: 3.8em; color: #5fef73; margin-bottom: 3px; }
-    h1 .small { font-size: 0.4em; }
-    h1 a { text-decoration: none }
-    h2 { font-size: 1.5em; color: #5fef73; }
-    h3 { text-align: center; color: #5fef73; }
-    a { color: #5fef73; }
-    .description { font-size: 1.2em; margin-bottom: 30px; margin-top: 30px; font-style: italic;}
-    .download { float: right; }
-    pre { background: #000; color: #fff; padding: 15px;}
-    hr { border: 0; width: 80%; border-bottom: 1px solid #aaa}
-    .footer { text-align:center; padding-top:30px; font-style: italic; }
-  </style>
-</head>
+<p>The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.</p>
 
-<body>
-  <a href="http://github.com/JimPanic/express-with-ease"><img style="position: absolute; top: 0; right: 0; border: 0;" src="http://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub" /></a>
+<p>THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">express = </span><span class="nx">require</span> <span class="s1">&#39;express&#39;</span>
+<span class="nv">path    = </span><span class="nx">require</span> <span class="s1">&#39;path&#39;</span>
+<span class="nv">fs      = </span><span class="nx">require</span> <span class="s1">&#39;fs&#39;</span>
+<span class="nv">file    = </span><span class="nx">require</span> <span class="s1">&#39;file&#39;</span></pre></div>             </td>           </tr>                               <tr id="section-2">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-2">&#182;</a>               </div>               <p><strong>Server</strong> is an extensive wrapper for
+<a href="http://expressjs.com/guide.html#creating-a server"><code>express.HTTPServer</code></a>.</p>
 
-  <div id="container">
+<p>It takes care of setting important default values, as well as
+loading configuration, middleware and most importantly define
+<strong>RESTful default routes</strong>.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="k">class</span> <span class="nx">Server</span>
+	<span class="nv">constructor: </span><span class="nf">(@config) -&gt;</span>
+		<span class="vi">@app = </span><span class="nx">express</span><span class="p">.</span><span class="nx">createServer</span> <span class="nx">@server_options</span><span class="p">()</span>
 
-    <div class="download">
-      <a href="http://github.com/JimPanic/express-with-ease/zipball/master">
-        <img border="0" width="90" src="http://github.com/images/modules/download/zip.png"></a>
-      <a href="http://github.com/JimPanic/express-with-ease/tarball/master">
-        <img border="0" width="90" src="http://github.com/images/modules/download/tar.png"></a>
-    </div>
+		<span class="nx">@configure</span><span class="p">()</span>
+		<span class="nx">@register_middleware</span><span class="p">()</span>
+		<span class="nx">@register_resources</span><span class="p">()</span></pre></div>             </td>           </tr>                               <tr id="section-3">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-3">&#182;</a>               </div>               <p>Sets values according to the config file.</p>
 
-    <h1><a href="http://github.com/JimPanic/express-with-ease">express-with-ease</a>
-      <span class="small">by <a href="http://github.com/JimPanic">JimPanic</a></span></h1>
+<ul>
+<li><p><code>basepath</code>: <code>config.base_path</code></p></li>
+<li><p><code>views</code>: <code>config.views_path</code></p></li>
+<li><p><code>view engine</code>: <code>config.view_engine</code></p></li>
+</ul>             </td>             <td class="code">               <div class="highlight"><pre>	<span class="nv">configure: </span><span class="o">-&gt;</span>
+		<span class="nx">@app</span><span class="p">.</span><span class="nx">set</span> <span class="s1">&#39;basepath&#39;</span><span class="p">,</span>    <span class="nx">@config</span><span class="p">.</span><span class="nx">base_path</span>   <span class="o">or</span> <span class="s1">&#39;/&#39;</span>
+		<span class="nx">@app</span><span class="p">.</span><span class="nx">set</span> <span class="s1">&#39;views&#39;</span><span class="p">,</span>       <span class="nx">@config</span><span class="p">.</span><span class="nx">views_path</span>  <span class="o">or</span> <span class="s1">&#39;views&#39;</span>
+		<span class="nx">@app</span><span class="p">.</span><span class="nx">set</span> <span class="s1">&#39;view engine&#39;</span><span class="p">,</span> <span class="nx">@config</span><span class="p">.</span><span class="nx">view_engine</span> <span class="o">or</span> <span class="s1">&#39;jade&#39;</span></pre></div>             </td>           </tr>                               <tr id="section-4">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-4">&#182;</a>               </div>               <p>Registers middleware for development environment,
+enabling output of exceptions incl. stack.</p>             </td>             <td class="code">               <div class="highlight"><pre>	<span class="nv">development: </span><span class="o">=&gt;</span>
+		<span class="nx">@app</span><span class="p">.</span><span class="nx">use</span> <span class="nx">express</span><span class="p">.</span><span class="nx">errorHandler</span>
+			<span class="nv">dumpExceptions: </span><span class="kc">true</span>
+			<span class="nv">showStack: </span><span class="kc">true</span>
 
-    <div class="description">
-      Wrapper for express for Rails-like RESTful URIs
-    </div>
+		<span class="nx">@app</span><span class="p">.</span><span class="nx">use</span> <span class="nx">express</span><span class="p">.</span><span class="nx">logger</span> <span class="nv">format: </span><span class="s1">&#39;dev&#39;</span></pre></div>             </td>           </tr>                               <tr id="section-5">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-5">&#182;</a>               </div>               <p>Registers necessary middleware.</p>             </td>             <td class="code">               <div class="highlight"><pre>	<span class="nv">register_middleware: </span><span class="o">-&gt;</span>
+		<span class="nx">@app</span><span class="p">.</span><span class="nx">use</span> <span class="nx">express</span><span class="p">.</span><span class="nx">bodyParser</span><span class="p">()</span>
+		<span class="nx">@app</span><span class="p">.</span><span class="nx">use</span> <span class="nx">express</span><span class="p">.</span><span class="nx">methodOverride</span><span class="p">()</span>
+		<span class="nx">@app</span><span class="p">.</span><span class="nx">use</span> <span class="nx">@app</span><span class="p">.</span><span class="nx">router</span>
+		<span class="nx">@app</span><span class="p">.</span><span class="nx">use</span> <span class="nx">express</span><span class="p">.</span><span class="nx">static</span> <span class="nx">@config</span><span class="p">.</span><span class="nx">assets_path</span>
 
-    <h2>Authors</h2>
-<p>Alexander Pánek<br/><br/>      </p>
-<h2>Contact</h2>
-<p>Alexander Pánek<br/>      </p>
+		<span class="nx">@app</span><span class="p">.</span><span class="nx">configure</span> <span class="s1">&#39;development&#39;</span><span class="p">,</span> <span class="nx">@development</span></pre></div>             </td>           </tr>                               <tr id="section-6">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-6">&#182;</a>               </div>               <p>Fires up the server and starts listening on <code>config.port</code></p>             </td>             <td class="code">               <div class="highlight"><pre>	<span class="nv">listen: </span><span class="o">-&gt;</span>
+		<span class="nx">@app</span><span class="p">.</span><span class="nx">listen</span><span class="p">(</span><span class="nx">@config</span><span class="p">.</span><span class="nx">port</span><span class="p">)</span></pre></div>             </td>           </tr>                               <tr id="section-7">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-7">&#182;</a>               </div>               <p>Checks whether SSL is enabled in the config and returns
+necessary options for <code>express.createServer</code>.</p>
 
+<p>SSL is enabled by setting <code>config.ssl.key</code> and
+<code>config.ssl.cert</code> to the respective (absolute, or relative
+to the app root) paths.</p>             </td>             <td class="code">               <div class="highlight"><pre>	<span class="nv">server_options: </span><span class="o">-&gt;</span>
+		<span class="k">return</span> <span class="p">{}</span> <span class="nx">unless</span> <span class="nx">@config</span><span class="p">.</span><span class="nx">ssl</span><span class="o">?</span>
 
-    <h2>Download</h2>
-    <p>
-      You can download this project in either
-      <a href="http://github.com/JimPanic/express-with-ease/zipball/master">zip</a> or
-      <a href="http://github.com/JimPanic/express-with-ease/tarball/master">tar</a> formats.
-    </p>
-    <p>You can also clone the project with <a href="http://git-scm.com">Git</a>
-      by running:
-      <pre>$ git clone git://github.com/JimPanic/express-with-ease</pre>
-    </p>
+		<span class="p">{</span>
+			<span class="nv">key: </span> <span class="nx">fs</span><span class="p">.</span><span class="nx">readFileSync</span> <span class="nx">@config</span><span class="p">.</span><span class="nx">ssl</span><span class="p">.</span><span class="nx">key</span>
+			<span class="nv">cert: </span><span class="nx">fs</span><span class="p">.</span><span class="nx">readFileSync</span> <span class="nx">@config</span><span class="p">.</span><span class="nx">ssl</span><span class="p">.</span><span class="nx">cert</span>
+		<span class="p">}</span></pre></div>             </td>           </tr>                               <tr id="section-8">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-8">&#182;</a>               </div>               <p>Find and register all available resources in <code>config.resources_path</code></p>             </td>             <td class="code">               <div class="highlight"><pre>	<span class="nv">register_resources: </span><span class="o">-&gt;</span>
+		<span class="nx">@controllers</span> <span class="o">||=</span> <span class="p">[]</span>
 
-    <div class="footer">
-      get the source code on GitHub : <a href="http://github.com/JimPanic/express-with-ease">JimPanic/express-with-ease</a>
-    </div>
+		<span class="nx">file</span><span class="p">.</span><span class="nx">walkSync</span> <span class="nx">@config</span><span class="p">.</span><span class="nx">resources_path</span><span class="p">,</span> <span class="p">(</span><span class="nx">start</span><span class="p">,</span> <span class="nx">directories</span><span class="p">,</span> <span class="nx">files</span><span class="p">)</span> <span class="o">=&gt;</span>
+			<span class="k">for</span> <span class="nx">filename</span> <span class="k">in</span> <span class="nx">files</span> <span class="k">when</span> <span class="nx">filename</span><span class="p">.</span><span class="nx">match</span> <span class="sr">/\.coffee$/</span>
+				<span class="nx">@register_controller</span><span class="p">(</span><span class="nx">start</span><span class="p">,</span> <span class="nx">filename</span><span class="p">,</span> <span class="nx">@get_relative_path</span><span class="p">(</span><span class="nx">start</span><span class="p">,</span> <span class="nx">filename</span><span class="p">))</span></pre></div>             </td>           </tr>                               <tr id="section-9">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-9">&#182;</a>               </div>               <p>Register routes for a specific resource controller</p>             </td>             <td class="code">               <div class="highlight"><pre>	<span class="nv">register_controller: </span><span class="nf">(start, filename, relative_path) -&gt;</span>
+		<span class="nv">route = </span><span class="nx">@route_from_path</span><span class="p">(</span><span class="nx">relative_path</span><span class="p">)</span>
 
-  </div>
+		<span class="nx">@controllers</span><span class="p">[</span><span class="nx">relative_path</span><span class="p">]</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">require</span><span class="p">(</span><span class="nx">path</span><span class="p">.</span><span class="nx">join</span><span class="p">(</span><span class="nx">start</span><span class="p">,</span> <span class="nx">filename</span><span class="p">))</span>
 
-  
-</body>
-</html>
+		<span class="k">for</span> <span class="nx">method</span><span class="p">,</span> <span class="nx">fn</span> <span class="k">of</span> <span class="nx">@controllers</span><span class="p">[</span><span class="nx">relative_path</span><span class="p">].</span><span class="nx">prototype</span>
+			<span class="nx">@register_route</span> <span class="nx">method</span><span class="p">,</span> <span class="nx">route</span><span class="p">,</span> <span class="nx">fn</span></pre></div>             </td>           </tr>                               <tr id="section-10">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-10">&#182;</a>               </div>               <p>Additionally, the value of <code>config.base_resource</code> is used
+to deduct what controller should map to <code>/</code></p>             </td>             <td class="code">               <div class="highlight"><pre>			<span class="nx">@register_route</span> <span class="nx">method</span><span class="p">,</span> <span class="s1">&#39;/&#39;</span><span class="p">,</span>   <span class="nx">fn</span> <span class="k">if</span> <span class="nx">relative_path</span> <span class="o">is</span> <span class="nx">@config</span><span class="p">.</span><span class="nx">base_resource</span></pre></div>             </td>           </tr>                               <tr id="section-11">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-11">&#182;</a>               </div>               <p>Register a single route. This method uses <code>deduct_http_method</code>
+and <code>deduct_route</code> to map accordingly.</p>
+
+<p><em>Note:</em> if you name a method other than <code>index</code>, <code>show</code>, <code>new</code>,
+<code>create</code>, <code>edit</code>, <code>update</code> or <code>destroy</code>, it will simply ignore it
+and assume this is a utility method.</p>             </td>             <td class="code">               <div class="highlight"><pre>	<span class="nv">register_route: </span><span class="nf">(method, route, fn) -&gt;</span>
+		<span class="nv">http_method = </span><span class="nx">@deduct_http_method</span><span class="p">(</span><span class="nx">method</span><span class="p">)</span>
+		<span class="nx">@app</span><span class="p">[</span><span class="nx">http_method</span><span class="p">]</span> <span class="nx">@deduct_route</span><span class="p">(</span><span class="nx">method</span><span class="p">,</span> <span class="nx">route</span><span class="p">),</span> <span class="nx">fn</span> <span class="k">if</span> <span class="nx">http_method</span><span class="o">?</span></pre></div>             </td>           </tr>                               <tr id="section-12">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-12">&#182;</a>               </div>               <p>Find out what HTTP method given method responds to</p>
+
+<ul>
+<li><p><code>index</code>, <code>show</code>, <code>new</code>, <code>edit</code>: <strong>GET</strong></p></li>
+<li><p><code>create</code>: <strong>POST</strong></p></li>
+<li><p><code>update</code>: <strong>PUT</strong></p></li>
+<li><p><code>destroy</code>: <strong>DELETE</strong></p></li>
+</ul>             </td>             <td class="code">               <div class="highlight"><pre>	<span class="nv">deduct_http_method: </span><span class="nf">(method) -&gt;</span>
+		<span class="k">switch</span> <span class="nx">method</span>
+			<span class="k">when</span> <span class="s1">&#39;index&#39;</span><span class="p">,</span> <span class="s1">&#39;show&#39;</span><span class="p">,</span> <span class="s1">&#39;new&#39;</span><span class="p">,</span> <span class="s1">&#39;edit&#39;</span> <span class="k">then</span> <span class="s1">&#39;get&#39;</span>
+			<span class="k">when</span> <span class="s1">&#39;create&#39;</span>                       <span class="k">then</span> <span class="s1">&#39;post&#39;</span>
+			<span class="k">when</span> <span class="s1">&#39;update&#39;</span>                       <span class="k">then</span> <span class="s1">&#39;put&#39;</span>
+			<span class="k">when</span> <span class="s1">&#39;destroy&#39;</span>                      <span class="k">then</span> <span class="s1">&#39;delete&#39;</span></pre></div>             </td>           </tr>                               <tr id="section-13">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-13">&#182;</a>               </div>               <p>Generates the relative path between the value of <code>config.resources_path</code>
+and given resource (in this case identified by <code>start</code> and <code>filename</code>)</p>             </td>             <td class="code">               <div class="highlight"><pre>	<span class="nv">get_relative_path: </span><span class="nf">(start, filename) -&gt;</span>
+		<span class="nx">file</span><span class="p">.</span><span class="nx">path</span><span class="p">.</span><span class="nx">relativePath</span><span class="p">(</span><span class="nx">@config</span><span class="p">.</span><span class="nx">resources_path</span><span class="p">,</span> <span class="nx">path</span><span class="p">.</span><span class="nx">join</span><span class="p">(</span><span class="nx">start</span><span class="p">,</span> <span class="nx">path</span><span class="p">.</span><span class="nx">basename</span><span class="p">(</span><span class="nx">filename</span><span class="p">,</span> <span class="s1">&#39;.coffee&#39;</span><span class="p">)))</span></pre></div>             </td>           </tr>                               <tr id="section-14">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-14">&#182;</a>               </div>               <p>Appends <code>:id</code>, <code>new</code> or <code>edit</code> to given route, according
+to the method called.</p>
+
+<ul>
+<li><p><code>index</code>, <code>create</code>: nothing is appended</p></li>
+<li><p><code>show</code>, <code>update</code>, <code>destroy</code>: <code>:id</code> is appended</p></li>
+<li><p><code>new</code>: <code>new</code> is appended</p></li>
+<li><p><code>edit</code>: <code>edit</code> is appended</p></li>
+</ul>             </td>             <td class="code">               <div class="highlight"><pre>	<span class="nv">deduct_route: </span><span class="nf">(method, route) -&gt;</span>
+		<span class="nv">new_route = </span><span class="k">switch</span> <span class="nx">method</span>
+									<span class="k">when</span> <span class="s1">&#39;index&#39;</span><span class="p">,</span> <span class="s1">&#39;create&#39;</span>           <span class="k">then</span> <span class="nx">route</span>
+									<span class="k">when</span> <span class="s1">&#39;show&#39;</span><span class="p">,</span> <span class="s1">&#39;update&#39;</span><span class="p">,</span> <span class="s1">&#39;destroy&#39;</span> <span class="k">then</span> <span class="nx">path</span><span class="p">.</span><span class="nx">join</span> <span class="nx">route</span><span class="p">,</span> <span class="s1">&#39;:id&#39;</span>
+									<span class="k">when</span> <span class="s1">&#39;new&#39;</span>                       <span class="k">then</span> <span class="nx">path</span><span class="p">.</span><span class="nx">join</span> <span class="nx">route</span><span class="p">,</span> <span class="s1">&#39;new&#39;</span>
+									<span class="k">when</span> <span class="s1">&#39;edit&#39;</span>                      <span class="k">then</span> <span class="nx">path</span><span class="p">.</span><span class="nx">join</span> <span class="nx">route</span><span class="p">,</span> <span class="s1">&#39;edit&#39;</span>
+
+		<span class="nx">new_route</span> <span class="o">+</span> <span class="s1">&#39;.:format?&#39;</span></pre></div>             </td>           </tr>                               <tr id="section-15">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-15">&#182;</a>               </div>               <p>Turns a relative path into an actual URI:</p>
+
+<ul>
+<li><p><code>/foo</code>: <code>/foo</code></p></li>
+<li><p><code>/foo/bar</code>: <code>/foo/:foo_id/bar</code></p></li>
+<li><p><code>/foo.namespace/bar</code>: <code>/foo/bar</code></p></li>
+</ul>
+
+<p><em>Note:</em> the :id part for the last resources in path
+are appended later (<code>deduct_route</code>), according to the
+available methods.</p>             </td>             <td class="code">               <div class="highlight"><pre>	<span class="nv">route_from_path: </span><span class="nf">(relative_path) -&gt;</span>
+		<span class="nv">route = </span><span class="s1">&#39;/&#39;</span>
+		<span class="nv">splitted_path = </span><span class="nx">relative_path</span><span class="p">.</span><span class="nx">split</span> <span class="s1">&#39;/&#39;</span>
+
+		<span class="k">for</span> <span class="nx">index</span><span class="p">,</span> <span class="nx">route_part</span> <span class="k">of</span> <span class="nx">splitted_path</span></pre></div>             </td>           </tr>                               <tr id="section-16">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-16">&#182;</a>               </div>               <p>NOTE: index would be a string, splitted_path.length is a number.
+      CoffeeScript automagically transforms <code>'=='</code> to <code>'==='</code>, which
+      then fails as <code>'1' === 1</code> yields <code>false</code>.</p>             </td>             <td class="code">               <div class="highlight"><pre>			<span class="nv">index = </span><span class="nb">parseInt</span><span class="p">(</span><span class="nx">index</span><span class="p">)</span>
+
+			<span class="nv">route = </span><span class="k">if</span> <span class="nx">splitted_path</span><span class="p">.</span><span class="nx">length</span> <span class="o">==</span> <span class="mi">1</span> <span class="o">or</span> <span class="nx">index</span> <span class="o">==</span> <span class="p">(</span><span class="nx">splitted_path</span><span class="p">.</span><span class="nx">length</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+				<span class="nx">path</span><span class="p">.</span><span class="nx">join</span> <span class="nx">route</span><span class="p">,</span> <span class="nx">route_part</span>
+			<span class="k">else</span> <span class="k">if</span> <span class="nx">path</span><span class="p">.</span><span class="nx">extname</span><span class="p">(</span><span class="nx">route_part</span><span class="p">)</span> <span class="o">is</span> <span class="s1">&#39;.namespace&#39;</span>
+				<span class="nx">path</span><span class="p">.</span><span class="nx">join</span> <span class="nx">route</span><span class="p">,</span> <span class="nx">path</span><span class="p">.</span><span class="nx">basename</span><span class="p">(</span><span class="nx">route_part</span><span class="p">,</span> <span class="s1">&#39;.namespace&#39;</span><span class="p">)</span>
+			<span class="k">else</span>
+				<span class="nx">path</span><span class="p">.</span><span class="nx">join</span> <span class="nx">route</span><span class="p">,</span> <span class="nx">route_part</span><span class="p">,</span> <span class="s2">&quot;:#{route_part}_id&quot;</span>
+
+		<span class="nx">route</span>
+
+<span class="nv">module.exports = </span><span class="nx">Server</span>
+
+</pre></div>             </td>           </tr>                </tbody>     </table>   </div> </body> </html> 
