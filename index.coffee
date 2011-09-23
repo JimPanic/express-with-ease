@@ -23,14 +23,23 @@
 #
 # However, all these paths are configurable.
 
-#### Minimalistic example
+#### Example
+#
+##### app.coffee
 #
 # 	Ease = require 'express-with-ease'
 #
 # 	server = new Ease
 # 	server.listen()
 #
-
+##### resources/posts.coffee
+#
+#		module.exports = class Posts
+#			index: (request, response) ->
+#				response.render 'posts/index', { posts: [...] }
+#
+#			show: (request, response) ->
+#				response.render 'posts/show', { post: ... }
 
 #### Configuration
 #
@@ -65,6 +74,9 @@ file    = require 'file'
 
 module.exports = class Ease
 	constructor: (@config = {}, @root = path.dirname(module.parent.filename)) ->
+		# Workaround: @server_options returns undefined if SSL is not
+		# configured. Express' createServer doesn't like options being
+		# undefined. Or empty. Or null.
 		if @config.ssl?
 			@app = express.createServer @server_options()
 		else
