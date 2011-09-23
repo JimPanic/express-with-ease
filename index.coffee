@@ -1,3 +1,43 @@
+# **Ease** is an extensive wrapper for
+# [`express.HTTPServer`](http://expressjs.com/guide.html#creating-a server)
+# written in [CoffeeScript](http://coffeescript.org).
+#
+# It takes care of setting important default values, as well as
+# loading configuration, middleware and most importantly define
+# **RESTful default routes**.
+
+#### Application Structure
+#
+# An **Ease** application follows a certain convention on where different
+# parts can be found. All paths are relative to the application root
+# directory.
+#
+# 	.
+# 	├── app.coffee    - main application file
+# 	├── config.coffee - configuration file
+# 	├── lib/          - directory for general code
+# 	├── models/       - models
+# 	├── public/       - publicly available static files
+# 	├── resources/    - resource controllers
+# 	└── views/        - layouts and views for resource controllers
+#
+# However, all these paths are configurable.
+
+#### Minimalistic example
+#
+# 	Ease = require 'express-with-ease'
+#
+# 	server = new Ease
+# 	server.listen()
+#
+
+
+#### Configuration
+#
+
+
+#### License
+#
 # Copyright (c) 2011 Brainsware
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
@@ -23,15 +63,12 @@ path    = require 'path'
 fs      = require 'fs'
 file    = require 'file'
 
-# **Server** is an extensive wrapper for
-# [`express.HTTPServer`](http://expressjs.com/guide.html#creating-a server).
-#
-# It takes care of setting important default values, as well as
-# loading configuration, middleware and most importantly define
-# **RESTful default routes**.
-class Server
-	constructor: (@config) ->
-		@app = express.createServer @server_options()
+module.exports = class Ease
+	constructor: (@config = {}, @root = path.dirname(module.parent.filename)) ->
+		if @config.ssl?
+			@app = express.createServer @server_options()
+		else
+			@app = express.createServer()
 
 		@configure()
 		@register_middleware()
@@ -47,7 +84,7 @@ class Server
 	#
 	configure: ->
 		@app.set 'basepath',    @config.base_path   or '/'
-		@app.set 'views',       @config.views_path  or 'views'
+		@app.set 'views',       @config.views_path  or path.join @root, 'views'
 		@app.set 'view engine', @config.view_engine or 'jade'
 
 	# Registers middleware for development environment,
@@ -63,16 +100,33 @@ class Server
 	register_middleware: ->
 		@app.use express.bodyParser()
 		@app.use express.cookieParser()
-		@app.use express.session { secret: @config.sessions.secret, store: @config.sessions.store }
+
+		# Register session middleware - if configured:
+		#
+		# * `config.sessions.secret`: Session secret
+		#
+		# * `config.sessions.store`: Session store object, e.g. `new MemcachedStore({ hosts: [ 'localhost:11211' ] })`
+		#
+		# For possible session stores, see the
+		# [Connect Wiki](https://github.com/senchalabs/connect/wiki)
+		if @config.sessions?
+			@app.use express.session { secret: @config.sessions.secret, store: @config.sessions.store }
+
 		@app.use express.methodOverride()
 		@app.use @app.router
-		@app.use express.static @config.assets_path
+		@app.use express.static @config.assets_path or path.join(@root, 'public')
+
+		# Register all additional middleware present in the array
+		# `config.middleware`.
+		if @config.middleware?
+			for middleware in @config.middleware
+				@app.use middleware
 
 		@app.configure 'development', @development
 
-	# Fires up the server and starts listening on `config.port`
+	# Fires up the server and starts listening on `config.port` or port 4000.
 	listen: ->
-		@app.listen(@config.port)
+		@app.listen(@config.port || 4000)
 
 	# Checks whether SSL is enabled in the config and returns
 	# necessary options for `express.createServer`.
@@ -81,16 +135,19 @@ class Server
 	# `config.ssl.cert` to the respective (absolute, or relative
 	# to the app root) paths.
 	server_options: ->
-		return {} unless @config.ssl?
+		return undefined unless @config.ssl?
 
 		{
 			key:  fs.readFileSync @config.ssl.key
 			cert: fs.readFileSync @config.ssl.cert
 		}
 
-	# Find and register all available resources in `config.resources_path`
+	# Find and register all available resources in `config.resources_path`.
+	#
+	# `config.resources_path` defaults to `resources`
 	register_resources: ->
 		@controllers ||= []
+		@config.resources_path ||= path.join @root, 'resources'
 
 		file.walkSync @config.resources_path, (start, directories, files) =>
 			for filename in files when filename.match /\.coffee$/
@@ -109,8 +166,15 @@ class Server
 			# to deduct what controller should map to `/`
 			@register_route method, '/', @proxy.bind(@controllers[relative_path], fn, method, relative_path) if relative_path is @config.base_resource
 
-	proxy: (fn, args...) ->
-		fn(args[2...args.length]...)
+	proxy: (fn, method, relative_path, request, response) ->
+		request.params['format'] ||= 'html'
+
+		# Throw 404 error if controller's @respond_to is defined but
+		# doesn't include the requested format.
+		if @respond_to?
+			return response.send(404) unless request.params.format in @respond_to
+
+		fn request, response
 
 	# Register a single route. This method uses `deduct_http_method`
 	# and `deduct_route` to map accordingly.
@@ -137,7 +201,7 @@ class Server
 			when 'index', 'show', 'new', 'edit' then 'get'
 			when 'create'                       then 'post'
 			when 'update'                       then 'put'
-			when 'destroy'                      then 'delete'
+			when 'destroy'                      then 'del'
 
 	# Generates the relative path between the value of `config.resources_path`
 	# and given resource (in this case identified by `start` and `filename`)
@@ -193,4 +257,4 @@ class Server
 
 		route
 
-module.exports = Server
+
