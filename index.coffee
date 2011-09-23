@@ -39,11 +39,11 @@ class Server
 
 	# Sets values according to the config file.
 	#
-	# * `basepath`: `config.base_path`
+	# * `basepath`: `config.base_path`, defaults to `/`
 	#
-	# * `views`: `config.views_path`
+	# * `views`: `config.views_path`, defaults to `views/`
 	#
-	# * `view engine`: `config.view_engine`
+	# * `view engine`: `config.view_engine`, defaults to `jade`
 	#
 	configure: ->
 		@app.set 'basepath',    @config.base_path   or '/'
@@ -62,6 +62,8 @@ class Server
 	# Registers necessary middleware.
 	register_middleware: ->
 		@app.use express.bodyParser()
+		@app.use express.cookieParser()
+		@app.use express.session { secret: @config.sessions.secret, store: @config.sessions.store }
 		@app.use express.methodOverride()
 		@app.use @app.router
 		@app.use express.static @config.assets_path
@@ -101,11 +103,14 @@ class Server
 		@controllers[relative_path] = new require(path.join(start, filename))
 
 		for method, fn of @controllers[relative_path].prototype
-			@register_route method, route, fn
+			@register_route method, route, @proxy.bind(@controllers[relative_path], fn, method, relative_path)
 
 			# Additionally, the value of `config.base_resource` is used
 			# to deduct what controller should map to `/`
-			@register_route method, '/',   fn if relative_path is @config.base_resource
+			@register_route method, '/', @proxy.bind(@controllers[relative_path], fn, method, relative_path) if relative_path is @config.base_resource
+
+	proxy: (fn, args...) ->
+		fn(args[2...args.length]...)
 
 	# Register a single route. This method uses `deduct_http_method`
 	# and `deduct_route` to map accordingly.
@@ -154,7 +159,7 @@ class Server
 									when 'index', 'create'           then route
 									when 'show', 'update', 'destroy' then path.join route, ':id'
 									when 'new'                       then path.join route, 'new'
-									when 'edit'                      then path.join route, 'edit'
+									when 'edit'                      then path.join route, ':id', 'edit'
 
 		new_route + '.:format?'
 

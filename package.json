@@ -1,5 +1,10 @@
 {
     "name": "express-with-ease"
+  , "description": "Extensive wrapper for express.HTTPServer written in CoffeeScript"
+  , "homepage": "http://jimpanic.github.com/express-with-ease/"
+  , "author": { "name": "Alexander Pánek", "email": "a.panek@brainsware.org" }
+  , "repository": { "type": "git", "url": "https://github.com/JimPanic/express-with-ease" }
+  , "licenses": [ { "type": "MIT", "url": "http://www.opensource.org/licenses/MIT" } ]
   , "version": "0.0.1"
   , "private": false
   , "dependencies": {
