@@ -1,14 +1,18 @@
-# **Ease** is an extensive wrapper for
+# **express-with-ease** is an extensive wrapper for
 # [`express.HTTPServer`](http://expressjs.com/guide.html#creating-a server)
 # written in [CoffeeScript](http://coffeescript.org).
 #
 # It takes care of setting important default values, as well as
 # loading configuration, middleware and most importantly define
-# **RESTful default routes**.
+# [**RESTful](http://en.wikipedia.org/wiki/Representational_state_transfer) default routes**.
+
+#### Installation with NPM
+#
+#	`$ npm install express-with-ease`
 
 #### Application Structure
 #
-# An **Ease** application follows a certain convention on where different
+# An **express-with-ease** application follows a certain convention on where different
 # parts can be found. All paths are relative to the application root
 # directory.
 #
@@ -25,14 +29,14 @@
 
 #### Example
 #
-##### app.coffee
+##### app.coffee:
 #
 # 	Ease = require 'express-with-ease'
 #
 # 	server = new Ease
 # 	server.listen()
 #
-##### resources/posts.coffee
+##### resources/posts.coffee:
 #
 #		module.exports = class Posts
 #			index: (request, response) ->
@@ -43,11 +47,77 @@
 
 #### Configuration
 #
+# You can pass an object to `Ease` with the following keys:
+#
+# * `config.port`: defaults to 4000
+#
+# * `config.base_path`: defaults to `/`
+#
+# * `config.resources_path`: defaults to `resources/`
+#
+# * `config.base_resource`: resource that handles the `base_path` route, *no default value*
+#
+# * `config.views_path`: defaults to `views/`
+#
+# * `config.view_engine`: defaults to `jade`, for others see the
+# [list of commonly used template engines](http://expressjs.com/guide.html#template-engines)
+#
+# * `config.sessions.secret`: secret key, *no default value*
+#
+# * `config.sessions.store`: session store (object), e.g. `new MemcachedStore({ hosts: [ 'localhost:11211' ] })`
+#
+# * `config.ssl.key`: path to an SSL key file
+#
+# * `config.ssl.cert`: path to an SSL certificate file,
+# note: if a valid key/certificate pair is given, the server automatically listens only for secure
+# connections
+#
+# * `config.middleware`: an array of connect compliant middleware objects
+#
 
+##### Example:
+#
+###### config.coffee:
+#
+# 	path           = require 'path'
+# 	MemcachedStore = require 'connect-memcached'
+#
+# 	module.exports =
+# 		port: 4000
+# 		base_path: '/'
+# 		base_resource: 'sessions'
+# 		resources_path: 'resources'
+# 		view_engine: 'jade'
+# 		views_path:  'views'
+# 		assets_path: 'public'
+#
+# 		sessions:
+# 			secret: '50389e82cd8c38a801f7120f61cc1efc0c7e362b'
+#
+# 			# See the Connect wiki for a list of possible session
+# 			# stores:
+# 			# https://github.com/senchalabs/connect/wiki
+# 			store: new MemcachedStore { hosts: 'localhost:11211' }
+#
+# 		# Comment out the whole SSL block if you want to disable it.
+# 		ssl:
+# 			key:  path.join('config', 'server.key')
+# 			cert: path.join('config', 'server.crt')
+#
+###### app.coffee:
+#
+# 	path = require 'path'
+# 	Ease = require 'express-with-ease'
+#
+# 	# Add current directory to `require`'s load paths.
+# 	require.paths.push __dirname
+#
+# 	server = new Ease require 'config'
+# 	server.listen()
 
 #### License
 #
-# Copyright (c) 2011 Brainsware
+# Copyright (c) 2011 Brainsware, [brainsware.org](http://brainsware.org)
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -72,7 +142,21 @@ path    = require 'path'
 fs      = require 'fs'
 file    = require 'file'
 
+#### Public methods
+
 module.exports = class Ease
+	##### `Ease.constructor (config, root)`
+	#
+	# Creates and configures an express app instance, as returned
+	# by express.createServer.
+	#
+	# Parameters:
+	#
+	# * `config` object, defaults to empty object
+	#
+	# * `root` path, application root, defaults to the directory of
+	# the including module. (e.g. app.coffee in the above examples)
+	#
 	constructor: (@config = {}, @root = path.dirname(module.parent.filename)) ->
 		# Workaround: @server_options returns undefined if SSL is not
 		# configured. Express' createServer doesn't like options being
@@ -85,6 +169,16 @@ module.exports = class Ease
 		@configure()
 		@register_middleware()
 		@register_resources()
+
+	##### `Ease.listen (port)`
+	#
+	# Fires up the server and starts listening on `config.port`, given port or
+	# default port 4000.
+	#
+	listen: (port = 4000) ->
+		@app.listen(@config.port || port)
+
+	#### Internal methods
 
 	# Sets values according to the config file.
 	#
@@ -136,9 +230,6 @@ module.exports = class Ease
 
 		@app.configure 'development', @development
 
-	# Fires up the server and starts listening on `config.port` or port 4000.
-	listen: ->
-		@app.listen(@config.port || 4000)
 
 	# Checks whether SSL is enabled in the config and returns
 	# necessary options for `express.createServer`.
@@ -268,5 +359,3 @@ module.exports = class Ease
 				path.join route, route_part, ":#{route_part}_id"
 
 		route
-
-

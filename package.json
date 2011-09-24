@@ -5,7 +5,7 @@
   , "author": { "name": "Alexander Pánek", "email": "a.panek@brainsware.org" }
   , "repository": { "type": "git", "url": "https://github.com/JimPanic/express-with-ease" }
   , "licenses": [ { "type": "MIT", "url": "http://www.opensource.org/licenses/MIT" } ]
-  , "version": "0.0.1"
+  , "version": "0.0.2"
   , "private": false
   , "dependencies": {
       "express": "2.4.6"
