@@ -263,13 +263,16 @@ module.exports = class Ease
 		@controllers[relative_path] = new require(path.join(start, filename))
 
 		for method, fn of @controllers[relative_path].prototype
-			@register_route method, route, @proxy.bind(@controllers[relative_path], fn, method, relative_path)
+			@register_route method, route, @proxy.bind(@controllers[relative_path], fn, method, relative_path, @root, @render)
 
 			# Additionally, the value of `config.base_resource` is used
 			# to deduct what controller should map to `/`
-			@register_route method, '/', @proxy.bind(@controllers[relative_path], fn, method, relative_path) if relative_path is @config.base_resource
+			@register_route method, '/', @proxy.bind(@controllers[relative_path], fn, method, relative_path, @root, @render) if relative_path is @config.base_resource
 
-	proxy: (fn, method, relative_path, request, response) ->
+	# Enclosing proxy method for controller's action.
+	#
+	# The rendering magic happens here!
+	proxy: (fn, method, relative_path, root, render, request, response) ->
 		request.params['format'] ||= 'html'
 
 		# Throw 404 error if controller's @respond_to is defined but
@@ -277,7 +280,27 @@ module.exports = class Ease
 		if @respond_to?
 			return response.send(404) unless request.params.format in @respond_to
 
-		fn request, response
+		# Bind render method to controller
+		@render = render.bind(@, method, relative_path, root, response)
+
+		# Call action (bound to the controller)
+		result = fn.call(@, request, response)
+
+		# Render view if that hasn't been done explicitely in the action
+		@render(result) unless @rendered
+
+	#
+	render: (method, relative_path, root, response, options) ->
+		view_path      = options.template || path.join(relative_path, method)
+		options.layout = path.join root, 'views', @layout || path.join root, 'views', 'layout'
+
+		delete options.template if options.template?
+
+		console.log options
+
+		response.render view_path, options
+
+		@rendered = true
 
 	# Register a single route. This method uses `deduct_http_method`
 	# and `deduct_route` to map accordingly.
