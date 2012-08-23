@@ -1,3 +1,4 @@
+[![build status](https://secure.travis-ci.org/JimPanic/express-with-ease.png)](http://travis-ci.org/JimPanic/express-with-ease)
 **express-with-ease** is an extensive wrapper for
 [`express.HTTPServer`](http://expressjs.com/guide.html#creating-a server)
 written in [CoffeeScript](http://coffeescript.org).
