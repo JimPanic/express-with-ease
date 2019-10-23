@@ -8,7 +8,7 @@
   , "version": "0.0.3"
   , "private": false
   , "dependencies": {
-      "express": "2.4.6"
+      "express": "4.17.1"
     , "jade": ">= 0.0.1"
 	, "file": ">= 0.0.1"
   }
